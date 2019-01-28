@@ -42,6 +42,23 @@ func ManufactureSink() (e EventSinkInterface) {
 		viper.SetDefault("stdoutJSONNamespace", "")
 		stdoutNamespace := viper.GetString("stdoutJSONNamespace")
 		e = NewStdoutSink(stdoutNamespace)
+	case "fluentd":
+		url := viper.GetString("httpSinkUrl")
+		if url == "" {
+			panic("http sink specified but no httpSinkUrl")
+		}
+
+		// By default we buffer up to 1500 events, and drop messages if more than
+		// 1500 have come in without getting consumed
+		viper.SetDefault("httpSinkBufferSize", 1500)
+		viper.SetDefault("httpSinkDiscardMessages", true)
+
+		bufferSize := viper.GetInt("httpSinkBufferSize")
+		overflow := viper.GetBool("httpSinkDiscardMessages")
+
+		h := NewFluentdSink(url, overflow, bufferSize)
+		go h.Run(make(chan bool))
+		return h
 	case "http":
 		url := viper.GetString("httpSinkUrl")
 		if url == "" {
