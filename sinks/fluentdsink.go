@@ -140,8 +140,6 @@ func (h *FluentdSink) drainEvents(events []EventData) {
 	requestJsonString = strings.TrimPrefix(requestJsonString, "{\"json\":")
 	requestJsonString = strings.TrimSuffix(requestJsonString, "}")
 
-	requestJsonString = "json=" + requestJsonString
-
 	//glog.Infof("%s", requestJsonString)
 
 	client := &http.Client{}
@@ -161,7 +159,7 @@ func (h *FluentdSink) drainEvents(events []EventData) {
 	defer response.Body.Close()
 
 	if response.StatusCode < 200 || response.StatusCode > 299 {
-		glog.Warningf("Got HTTP code %v from %v", response.StatusCode, h.SinkURL)
+		glog.Warningf("Fluentd got HTTP code %v from %v", response.StatusCode, h.SinkURL)
 	}
 
 	io.Copy(ioutil.Discard, response.Body)
